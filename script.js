@@ -1,40 +1,37 @@
-const posts = [
-  {title: 'Post One', body: 'This is post one'},
-  {title: 'Post Two', body: 'This is post two'},
-];
-
-const createPost = (post) => {
+function getData(endpoint) {
   return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      let error = true;
+    const xhr = new XMLHttpRequest();
 
-      if (!error) {
-        posts.push(post);
-        resolve();
-      } else {
-        reject('Something went wrong.');
+    xhr.open('GET', endpoint);
+
+    xhr.onreadystatechange = function () {
+      if (this.readyState === 4) {
+        if (this.status === 200) {
+          resolve(JSON.parse(this.responseText));
+        } else {
+          reject('Something went wrong');
+        }
       }
-    }, 2000);
+    };
+
+    setTimeout(() => {
+      xhr.send();
+    }, Math.floor(Math.random() * 3000) + 1000);
   });
-};
+}
 
-const getPosts = () => {
-  setTimeout(() => {
-    posts.forEach(function (post) {
-      const div = document.createElement('div');
-      div.innerHTML = `<strong>${post.title}</strong> - ${post.body}`;
-      document.querySelector('#posts').appendChild(div);
-    });
-  }, 1000);
-};
+const moviesPromise = getData('./movies.json');
+const actorsPromise = getData('./actors.json');
+const directorsPromise = getData('./directors.json');
 
-const showError = (error) => {
-  const h3 = document.createElement('h3');
-  h3.innerHTML = `<strong>${error}</strong>`;
-  h3.style.color = 'red';
-  document.getElementById('posts').appendChild(h3);
-};
+const dummyPromise = new Promise((resolve, reject) => {
+  resolve('Hello World');
+});
 
-createPost({title: 'Post Three', body: 'This is post'})
-  .then(getPosts)
-  .catch(showError);
+// Takes in promises
+Promise.all([moviesPromise, actorsPromise, directorsPromise, dummyPromise])
+  .then((data) => {
+    // Returns an array of promise results
+    console.log(data);
+  })
+  .catch((error) => console.log(error));
